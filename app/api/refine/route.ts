@@ -104,12 +104,14 @@ Enhance the idea into the requested outputs while honoring these constraints.`
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err)
     console.log('[v0] refine error:', detail)
+    const needsBilling = /credit card|billing|payment/i.test(detail)
     return Response.json(
       {
-        error: 'The design engine could not generate a result. Please try again.',
-        detail,
+        error: needsBilling
+          ? 'The AI Gateway needs a valid credit card on file to unlock your free credits. Add one in your Vercel dashboard, then try again.'
+          : 'The design engine could not generate a result. Please try again.',
       },
-      { status: 500 },
+      { status: needsBilling ? 402 : 500 },
     )
   }
 }
