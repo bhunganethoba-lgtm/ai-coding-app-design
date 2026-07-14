@@ -11,7 +11,7 @@ import {
 export const maxDuration = 60
 
 const requestSchema = z.object({
-  prompt: z.string().min(3).max(4000),
+  prompt: z.string().min(3).max(20000),
   ide: z.string(),
   style: z.string(),
   palette: z.string(),

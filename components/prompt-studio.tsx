@@ -31,10 +31,20 @@ export function PromptStudio() {
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<RefineResult | null>(null)
 
-  const canSubmit = prompt.trim().length >= 3 && !loading
+  const MAX_CHARS = 20000
+  const promptLength = prompt.trim().length
+  const rawLength = prompt.length
+  const canSubmit = promptLength >= 3 && !loading
+  const validationError =
+    promptLength > 0 && promptLength < 3
+      ? `Please enter a prompt of at least 3 characters. (${promptLength}/3)`
+      : null
 
   async function handleGenerate() {
-    if (!canSubmit) return
+    if (!canSubmit) {
+      setError(validationError || 'Please enter a prompt.')
+      return
+    }
     setLoading(true)
     setError(null)
     try {
@@ -86,10 +96,33 @@ export function PromptStudio() {
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          rows={4}
+          rows={6}
+          maxLength={MAX_CHARS}
           placeholder="e.g. A habit tracker with streaks, reminders, and a weekly overview…"
-          className="mt-2 w-full resize-y rounded-xl border border-input bg-background/40 p-4 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/70 focus-visible:border-primary/60 focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-ring"
+          className={cn(
+            'mt-2 w-full resize-y rounded-xl border bg-background/40 p-4 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/70 focus-visible:border-primary/60 focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-ring',
+            validationError ? 'border-destructive/50' : 'border-input',
+          )}
         />
+        <div className="mt-1 flex items-start justify-between gap-2">
+          {validationError ? (
+            <p className="text-xs text-destructive">{validationError}</p>
+          ) : (
+            <span />
+          )}
+          <p
+            className={cn(
+              'shrink-0 text-right text-xs tabular-nums',
+              rawLength >= MAX_CHARS * 0.95
+                ? 'text-destructive'
+                : rawLength >= MAX_CHARS * 0.8
+                  ? 'text-chart-3'
+                  : 'text-muted-foreground',
+            )}
+          >
+            {rawLength.toLocaleString()} / {MAX_CHARS.toLocaleString()}
+          </p>
+        </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="text-xs text-muted-foreground">Try:</span>
